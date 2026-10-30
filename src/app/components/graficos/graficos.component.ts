@@ -15,29 +15,24 @@ Chart.register(...registerables);
 })
 export class GraficosComponent implements OnDestroy {
 
-  // input<T>() recibe datos del componente padre mediante un Signal.
+  // TODO - input<T>() recibe datos del componente padre mediante un Signal.
   // El padre lo usa así: <app-graficos [selecciones]="selecciones">
-  selecciones = input<Seleccion[]>([]);
+  selecciones = null;
 
-  // viewChild apunta al <canvas #canvasGoles> del template.
+  // TODO - viewChild apunta al <canvas #canvasGoles> del template.
   // Es undefined hasta que Angular construye la vista.
-  private canvasGoles = viewChild<ElementRef<HTMLCanvasElement>>('canvasGoles');
+  private canvasGoles = null;
 
   // Guarda la instancia de Chart para destruirla antes de redibujar.
   // Sin esto Chart.js lanzaría el error "Canvas is already in use".
   // En este ejemplo, solo tendremos un único chart 'goles', pero usar un Map con claves descriptivas es buena práctica cuando el componente puede crecer con más gráficas en el futuro.
   private charts = new Map<string, Chart>();
 
-  // effect() se re-ejecuta automáticamente cada vez que cambia selecciones()
+  // TODO - effect() se re-ejecuta automáticamente cada vez que cambia selecciones()
   // o canvasGoles(). La primera vez los canvas aún no existen (undefined) →
   // el guard los detiene. Cuando Angular los crea, el effect vuelve a dispararse.
   constructor() {
-    effect(() => {
-      const data   = this.selecciones();
-      const canvas = this.canvasGoles();
-      if (!canvas) return;
-      this.renderGoles(data, canvas.nativeElement);
-    });
+    
   }
 
   // Destruye la instancia anterior para liberar el canvas antes de redibujar.
@@ -54,66 +49,59 @@ export class GraficosComponent implements OnDestroy {
   // COLORS[i % COLORS.length] cicla la paleta cuando hay más barras que colores.
   // El sufijo 'bb' en hex equivale a ~73 % de opacidad (relleno semitransparente).
   // ──────────────────────────────────────────────────────────────────────────
+  // TODO - renderGoles() dibuja el gráfico de goles.
   private renderGoles(seleccion: Seleccion[], canvas: HTMLCanvasElement) {
-    this.destroyChart('goles');
+    // Destruye la instancia anterior para liberar el canvas antes de redibujar.    
 
-    //Es importante crear una copia de seleccion, ya que sort modifica el array seleccion original
+    // TOOD - Es importante crear una copia de seleccion, ya que sort modifica el array seleccion original
     // NO ESTARÍA BIEN: const sel = seleccion;
     // ESTO ES LO MISMO Y ESTÁ BIEN: const sel = [...seleccion]; y luego hacer sel.sort... 
-    const sorted = [...seleccion].sort((a, b) => b.goles - a.goles);
+    const sorted = "";
     const COLORS = ['#3880ff', '#2dd36f', '#eb445a', '#ffc409', '#5260ff',
                     '#0cd1e8', '#f7a34b', '#a855f7', '#10dc60', '#92949c'];
 
+    // TODO - Añadir labels, datasets, backgroundColor y borderColor a la gráfica.
     this.charts.set('goles', new Chart(canvas, {
       type: 'bar',
       data: {
-        labels: sorted.map(s => s.seleccion),
+        labels: [],
         datasets: [{
           label: 'Goles marcados',
-          data: sorted.map(s => s.goles),
-          backgroundColor: sorted.map((_, i) => COLORS[i % COLORS.length] + 'bb'),
-          borderColor:     sorted.map((_, i) => COLORS[i % COLORS.length]),
+          data: [],
+          backgroundColor: [],
+          borderColor:     [],
           borderWidth: 2,
           borderRadius: 8,
           // borderSkipped: false → redondea todas las esquinas, no solo la superior
           borderSkipped: false,
         }]
       },
+      // TODO - Configuración de la gráfica: responsive, título, tooltips, ejes, etc.
       options: {
         // responsive: true → la gráfica se redimensiona con el contenedor
         responsive: true,
         // maintainAspectRatio: false → la altura se controla desde CSS
         maintainAspectRatio: false,
         plugins: {
-          legend: { display: false },
-          title: {
-            display: true,
-            text: 'Goles por selección — UEFA Euro 2024',
-            font: { size: 15, weight: 'bold' },
-            color: '#333',
-            padding: { bottom: 14 }
-          },
-          tooltip: {
-            callbacks: {
-              label: ctx => ` ${ctx.parsed.y} goles en ${sorted[ctx.dataIndex].partidos} partidos`
-            }
-          }
+          legend: { },
+          title: {},
+          tooltip: {}
         },
         scales: {
-          //tick -> Valores de los ejes.
+          //TODO - Configuración de los ejes X e Y. Se pueden personalizar ticks, grid, etc.
           y: {
             // beginAtZero: true → el eje Y empieza en 0, evita gráficas engañosas
-            beginAtZero: true, 
-            //stepSize:1 -> Los números del eje y aparecen en intervalos de 1 (0,1,2,3,...)
-            ticks: { stepSize: 1, color: '#555' },
+  
+            //ticks: stepSize:1 -> Los números del eje y aparecen en intervalos de 1 (0,1,2,3,...)
+
             //grid: El color de las líneas del fondo. (Se ven en horizontal para marcar el nivel del eje Y). Color 0,0,0 + opacidad 0.06
-            grid: { color: 'rgba(0,0,0,0.06)' } 
+
           },
           x: {
-            //maxRotation: 45 -> Si las etiquetas del eje X son largas, las rota hasta un máximo de 45 grados.
-            ticks: { color: '#555', maxRotation: 45 },
+            //ticks: maxRotation: 45 -> Si las etiquetas del eje X son largas, las rota hasta un máximo de 45 grados.
+
             // En este caso no queremos mostrar las líneas en el eje X.
-            grid: { display: false }
+
           }
         }
       }
